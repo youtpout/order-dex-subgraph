@@ -37,4 +37,5 @@ type PairPrice @entity{
   amount: BigInt! # uint256
   price: BigInt! # uint256
   pair: Pair! 
+  reverse:Boolean!
 }
