@@ -1,7 +1,8 @@
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
   Contract,
   OrderAdded,
+  OrderAddedOrderInfoStruct,
   OrderCanceled,
   OwnershipTransferred,
   RoleAdminChanged,
@@ -9,74 +10,98 @@ import {
   RoleRevoked,
   Sold
 } from "../generated/Contract/Contract"
-import { ExampleEntity } from "../generated/schema"
+import { Order, Counter, Pair, PairPrice } from "../generated/schema"
 
 export function handleOrderAdded(event: OrderAdded): void {
-  // Entities can be loaded from the store using a string ID; this ID
-  // needs to be unique across all entities of the same type
-  let entity = ExampleEntity.load(event.transaction.from.toHex())
-
-  // Entities only exist after they have been saved to the store;
-  // `null` checks allow to create entities on demand
-  if (!entity) {
-    entity = new ExampleEntity(event.transaction.from.toHex())
-
-    // Entity fields can be set using simple assignments
-    entity.count = BigInt.fromI32(0)
-  }
-
-  // BigInt and BigDecimal math are supported
-  entity.count = entity.count + BigInt.fromI32(1)
-
+  let entity = new Order(event.params.id.toHex());
   // Entity fields can be set based on event parameters
-  entity.id = event.params.id
-  entity.trader = event.params.trader
+
+  let orderInfo = event.params.orderInfo;
+  let price = orderInfo.amountToBuy.div(orderInfo.amountToSell);
+  let priceInverted = orderInfo.amountToBuy.div(orderInfo.amountToSell);
+
+
+  updateCount("0x0", entity.status);
+  updateCount("seller_" + event.params.trader.toHex(), entity.status);
+  updateCount("pair_" + orderInfo.tokenToSell.toHex() + "_" + orderInfo.tokenToBuy.toHex(), entity.status);
+  updateAmount(orderInfo.tokenToSell, orderInfo.tokenToBuy, price, orderInfo.amountToSell, false);
+  updateAmount(orderInfo.tokenToBuy, orderInfo.tokenToSell, priceInverted, orderInfo.amountToBuy, true);
 
   // Entities can be written to the store with `.save()`
-  entity.save()
-
-  // Note: If a handler doesn't require existing field values, it is faster
-  // _not_ to load the entity from the store. Instead, create it fresh with
-  // `new Entity(...)`, set the fields that should be updated and save the
-  // entity back to the store. Fields that were not set or unset remain
-  // unchanged, allowing for partial updates to be applied.
-
-  // It is also possible to access smart contracts from mappings. For
-  // example, the contract that has emitted the event can be connected to
-  // with:
-  //
-  // let contract = Contract.bind(event.address)
-  //
-  // The following functions can then be called on this contract to access
-  // state variables and other data:
-  //
-  // - contract.DEFAULT_ADMIN_ROLE(...)
-  // - contract.MATCHER_ROLE(...)
-  // - contract.MINTER_ROLE(...)
-  // - contract.PAUSER_ROLE(...)
-  // - contract.WETH(...)
-  // - contract.creationFee(...)
-  // - contract.fetchPageOrders(...)
-  // - contract.getRoleAdmin(...)
-  // - contract.getRoleMember(...)
-  // - contract.getRoleMemberCount(...)
-  // - contract.hasRole(...)
-  // - contract.nativeToken(...)
-  // - contract.orderCount(...)
-  // - contract.orders(...)
-  // - contract.owner(...)
-  // - contract.rewardfee(...)
-  // - contract.supportsInterface(...)
+  entity.save();
 }
 
-export function handleOrderCanceled(event: OrderCanceled): void {}
 
-export function handleOwnershipTransferred(event: OwnershipTransferred): void {}
+function updateCount(id: string, status: i32): void {
+  let entity = Counter.load(id);
+  if (entity == null) {
+    entity = new Counter(id);
+  }
+  switch (status) {
+    case 0:
+      entity.active = entity.active.plus(BigInt.fromI32(1));
+      entity.all = entity.all.plus(BigInt.fromI32(1));
+      break;
+    case 1:
+      entity.active = entity.active.minus(BigInt.fromI32(1));
+      entity.canceled = entity.canceled.plus(BigInt.fromI32(1));
+      break;
+    case 2:
+      entity.active = entity.active.minus(BigInt.fromI32(1));
+      entity.sold = entity.sold.plus(BigInt.fromI32(1));
+      break;
+    case 3:
+      entity.active = entity.active.minus(BigInt.fromI32(1));
+      entity.soldAndCanceled = entity.soldAndCanceled.plus(BigInt.fromI32(1));
+      break;
+  }
+  entity.save();
+}
 
-export function handleRoleAdminChanged(event: RoleAdminChanged): void {}
 
-export function handleRoleGranted(event: RoleGranted): void {}
+function updateAmount(tokenToSell: Bytes, tokenToBuy: Bytes, price: BigInt, amount: BigInt, reverse: boolean): void {
 
-export function handleRoleRevoked(event: RoleRevoked): void {}
+  let id = "pair_" + tokenToSell.toHex() + "_" + tokenToBuy.toHex();
+  let entity = Pair.load(id);
+  if (entity == null) {
+    entity = new Pair(id);
+    entity.tokenBuy = tokenToBuy;
+    entity.tokenSell = tokenToSell;
+  }
 
-export function handleSold(event: Sold): void {}
+  let ppId = id + "_" + price.toHex();
+  let pp = PairPrice.load(ppId);
+  if (pp == null) {
+    pp = new PairPrice(ppId);
+    pp.price = price;
+    pp.pair = id;
+    pp.reverse = reverse;
+  }
+
+  if (reverse) {
+    let sold = entity.sold;
+    if (sold.indexOf(ppId) === -1) {
+      sold.push(ppId);
+    }
+    entity.sold = sold;
+  } else {
+    let buy = entity.buy;
+    if (buy.indexOf(ppId) === -1) {
+      buy.push(ppId);
+    }
+    entity.buy = buy;
+  }
+
+  pp.amount = pp.amount.plus(amount);
+
+  entity.save();
+  pp.save();
+}
+
+export function handleOrderCanceled(event: OrderCanceled): void {
+
+}
+
+export function handleSold(event: Sold): void {
+
+}

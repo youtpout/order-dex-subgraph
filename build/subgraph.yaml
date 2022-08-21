@@ -1,6 +1,6 @@
 specVersion: 0.0.4
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: OrderDex
@@ -19,12 +19,13 @@ dataSources:
         - Sold
       abis:
         - name: OrderDex
-          file: ./abis/Contract.json
+          file: OrderDex\abis\Contract.json
       eventHandlers:
-        - event: OrderAdded(indexed uint256,indexed address,(uint256,uint8,uint256,uint256,uint256,uint256,uint256,address,address,address,uint256,bool,bool))
+        - event: OrderAdded(indexed uint256,indexed
+            address,(uint256,uint8,uint256,uint256,uint256,uint256,uint256,address,address,address,uint256,bool,bool))
           handler: handleOrderAdded
         - event: OrderCanceled(indexed uint256,bool)
           handler: handleOrderCanceled
         - event: Sold(indexed uint256,indexed uint256,indexed address,uint256,bool)
           handler: handleSold
-      file: ./src/contract.ts
+      file: OrderDex\OrderDex.wasm
