@@ -96,6 +96,24 @@ export class Order extends Entity {
     this.set("amountToBuyCompleted", Value.fromBigInt(value));
   }
 
+  get priceByTokenA(): BigInt {
+    let value = this.get("priceByTokenA");
+    return value!.toBigInt();
+  }
+
+  set priceByTokenA(value: BigInt) {
+    this.set("priceByTokenA", Value.fromBigInt(value));
+  }
+
+  get priceByTokenB(): BigInt {
+    let value = this.get("priceByTokenB");
+    return value!.toBigInt();
+  }
+
+  set priceByTokenB(value: BigInt) {
+    this.set("priceByTokenB", Value.fromBigInt(value));
+  }
+
   get trader(): Bytes {
     let value = this.get("trader");
     return value!.toBytes();

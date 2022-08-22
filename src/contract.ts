@@ -28,6 +28,8 @@ export function handleOrderAdded(event: OrderAdded): void {
   entity.timestamp = orderInfo.timestamp;
   entity.fromETH = orderInfo.fromETH;
   entity.toETH = orderInfo.toETH;
+  entity.priceByTokenA = orderInfo.amountToBuy.div(orderInfo.amountToSell);
+  entity.priceByTokenB = orderInfo.amountToSell.div(orderInfo.amountToBuy);
 
   let price = orderInfo.amountToBuy.div(orderInfo.amountToSell);
   let priceInverted = orderInfo.amountToBuy.div(orderInfo.amountToSell);
@@ -47,6 +49,11 @@ function updateCount(id: string, status: i32): void {
   let entity = Counter.load(id);
   if (entity == null) {
     entity = new Counter(id);
+    entity.all = BigInt.zero();
+    entity.active = BigInt.zero();
+    entity.sold = BigInt.zero();
+    entity.canceled = BigInt.zero();
+    entity.soldAndCanceled = BigInt.zero();
   }
   switch (status) {
     case 0:
@@ -78,6 +85,8 @@ function updateAmount(tokenToSell: Bytes, tokenToBuy: Bytes, price: BigInt, amou
     entity = new Pair(id);
     entity.tokenBuy = tokenToBuy;
     entity.tokenSell = tokenToSell;
+    entity.buy = [];
+    entity.sold = [];
   }
 
   let ppId = id + "_" + price.toHex();
@@ -87,6 +96,7 @@ function updateAmount(tokenToSell: Bytes, tokenToBuy: Bytes, price: BigInt, amou
     pp.price = price;
     pp.pair = id;
     pp.reverse = reverse;
+    pp.amount = BigInt.zero();
   }
 
   if (reverse) {

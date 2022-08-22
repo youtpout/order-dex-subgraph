@@ -6,9 +6,9 @@ dataSources:
     name: OrderDex
     network: mumbai
     source:
-      address: "0xB79aF1F3dD7e25Da902363ef5E220470b9288021"
+      address: "0x1fb496CDD6e00EE72c775263FFb34c1401bC5CfC"
       abi: OrderDex
-      startBlock: 27718498
+      startBlock: 27734255
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

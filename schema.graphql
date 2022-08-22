@@ -6,6 +6,8 @@ type Order @entity {
   amountToBuy: BigInt! # uint256
   amountToSellCompleted: BigInt! # uint256
   amountToBuyCompleted: BigInt! # uint256
+  priceByTokenA: BigInt! # uint256
+  priceByTokenB: BigInt! # uint256
   trader: Bytes! # address
   tokenToSell: Bytes! # address
   tokenToBuy: Bytes! # address
@@ -27,8 +29,8 @@ type Pair @entity{
   id: ID!
   tokenSell: Bytes! # address
   tokenBuy: Bytes! # address
-  buy: [PairPrice!]! @derivedFrom(field: "pair")
-  sold: [PairPrice!]! @derivedFrom(field: "pair")
+  buy: [PairPrice!]! 
+  sold: [PairPrice!]! 
 }
 
 
