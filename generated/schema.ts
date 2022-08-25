@@ -354,13 +354,13 @@ export class PairPrice extends Entity {
     this.set("amount", Value.fromBigInt(value));
   }
 
-  get price(): BigInt {
+  get price(): BigDecimal {
     let value = this.get("price");
-    return value!.toBigInt();
+    return value!.toBigDecimal();
   }
 
-  set price(value: BigInt) {
-    this.set("price", Value.fromBigInt(value));
+  set price(value: BigDecimal) {
+    this.set("price", Value.fromBigDecimal(value));
   }
 
   get pair(): string {

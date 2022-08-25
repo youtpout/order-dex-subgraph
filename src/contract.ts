@@ -1,4 +1,4 @@
-import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { Address, BigDecimal, BigInt, Bytes } from "@graphprotocol/graph-ts"
 import {
   OrderAdded,
   OrderAddedOrderInfoStruct,
@@ -31,8 +31,8 @@ export function handleOrderAdded(event: OrderAdded): void {
   entity.priceByTokenA = orderInfo.amountToBuy.div(orderInfo.amountToSell);
   entity.priceByTokenB = orderInfo.amountToSell.div(orderInfo.amountToBuy);
 
-  let price = orderInfo.amountToBuy.div(orderInfo.amountToSell);
-  let priceInverted = orderInfo.amountToBuy.div(orderInfo.amountToSell);
+  let price = new BigDecimal(orderInfo.amountToBuy).div(new BigDecimal(orderInfo.amountToSell));
+  let priceInverted = new BigDecimal(orderInfo.amountToBuy).div(new BigDecimal(orderInfo.amountToSell));
 
   updateCount("0x0", entity.status);
   updateCount("seller_" + event.params.trader.toHex(), entity.status);
@@ -77,7 +77,7 @@ function updateCount(id: string, status: i32): void {
 }
 
 
-function updateAmount(tokenToSell: Bytes, tokenToBuy: Bytes, price: BigInt, amount: BigInt, reverse: boolean, substract: boolean): void {
+function updateAmount(tokenToSell: Bytes, tokenToBuy: Bytes, price: BigDecimal, amount: BigInt, reverse: boolean, substract: boolean): void {
 
   let id = "pair_" + tokenToSell.toHex() + "_" + tokenToBuy.toHex();
   let entity = Pair.load(id);
@@ -89,7 +89,7 @@ function updateAmount(tokenToSell: Bytes, tokenToBuy: Bytes, price: BigInt, amou
     entity.sold = [];
   }
 
-  let ppId = id + "_" + price.toHex();
+  let ppId = id + "_" + price.toString();
   let pp = PairPrice.load(ppId);
   if (pp == null) {
     pp = new PairPrice(ppId);
@@ -129,8 +129,8 @@ export function handleOrderCanceled(event: OrderCanceled): void {
     entity = new Order(event.params.id.toHex());
   }
 
-  let price = entity.amountToBuy.div(entity.amountToSell);
-  let priceInverted = entity.amountToBuy.div(entity.amountToSell);
+  let price = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
+  let priceInverted = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
   let amount = entity.amountToSell.minus(entity.amountToSellCompleted);
   let amount2 = entity.amountToBuy.minus(entity.amountToBuyCompleted);
 
@@ -159,8 +159,8 @@ export function handleSold(event: Sold): void {
 
   let orderInfo = contract.orders(event.params.orderIdA);
 
-  let price = entity.amountToBuy.div(entity.amountToSell);
-  let priceInverted = entity.amountToBuy.div(entity.amountToSell);
+  let price = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
+  let priceInverted = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
   let amount = event.params.amount;
   let amount2 = orderInfo.getAmountToSellCompleted().minus(entity.amountToSellCompleted);
 
