@@ -32,13 +32,14 @@ export function handleOrderAdded(event: OrderAdded): void {
   entity.priceByTokenB = orderInfo.amountToSell.div(orderInfo.amountToBuy);
 
   let price = new BigDecimal(orderInfo.amountToBuy).div(new BigDecimal(orderInfo.amountToSell));
-  let priceInverted = new BigDecimal(orderInfo.amountToBuy).div(new BigDecimal(orderInfo.amountToSell));
+  let priceInverted = new BigDecimal(orderInfo.amountToSell).div(new BigDecimal(orderInfo.amountToBuy));
 
   updateCount("0x0", entity.status);
   updateCount("seller_" + event.params.trader.toHex(), entity.status);
   updateCount("pair_" + orderInfo.tokenToSell.toHex() + "_" + orderInfo.tokenToBuy.toHex(), entity.status);
   updateAmount(orderInfo.tokenToSell, orderInfo.tokenToBuy, price, orderInfo.amountToSell, false, false);
   updateAmount(orderInfo.tokenToBuy, orderInfo.tokenToSell, priceInverted, orderInfo.amountToBuy, true, false);
+
 
   // Entities can be written to the store with `.save()`
   entity.save();
@@ -130,7 +131,7 @@ export function handleOrderCanceled(event: OrderCanceled): void {
   }
 
   let price = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
-  let priceInverted = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
+  let priceInverted = new BigDecimal(entity.amountToSell).div(new BigDecimal(entity.amountToBuy));
   let amount = entity.amountToSell.minus(entity.amountToSellCompleted);
   let amount2 = entity.amountToBuy.minus(entity.amountToBuyCompleted);
 
@@ -160,7 +161,7 @@ export function handleSold(event: Sold): void {
   let orderInfo = contract.orders(event.params.orderIdA);
 
   let price = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
-  let priceInverted = new BigDecimal(entity.amountToBuy).div(new BigDecimal(entity.amountToSell));
+  let priceInverted = new BigDecimal(entity.amountToSell).div(new BigDecimal(entity.amountToBuy));
   let amount = event.params.amount;
   let amount2 = orderInfo.getAmountToSellCompleted().minus(entity.amountToSellCompleted);
 
